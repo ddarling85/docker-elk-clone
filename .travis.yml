@@ -24,13 +24,15 @@ before_script:
 
 script:
   # Compose
-  - docker-compose up -d elasticsearch
+  - docker-compose up -d es01
+  - docker-compose up -d es02
   - sleep 20
   - .travis/elasticsearch-setup-passwords.exp
   - docker-compose up -d
   - .travis/run-tests.sh
   - docker-compose ps
-  - docker-compose logs elasticsearch
+  - docker-compose logs es01
+  - docker-compose logs es02
   - docker-compose logs kibana
   - docker-compose logs logstash
   - docker-compose down -v

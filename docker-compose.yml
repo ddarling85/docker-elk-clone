@@ -1,22 +1,51 @@
-version: '2'
-
+version: '2.2'
 services:
-
-  elasticsearch:
+  es01:
     build:
       context: elasticsearch/
       args:
         ELK_VERSION: $ELK_VERSION
-    volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+    container_name: es01
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_PASSWORD: changeme
+      - node.name=es01
+      - discovery.seed_hosts=es02
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /srv/elasticsearch/es01_data:/usr/share/elasticsearch/data
+      - /srv/elasticsearch/es01_logs:/usr/share/elasticsearch/logs
+    ports:
+      - 9200:9200
     networks:
-      - elk
+      - esnet
+  es02:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /srv/elasticsearch/es02_data:/usr/share/elasticsearch/data
+      - /srv/elasticsearch/es02_logs:/usr/share/elasticsearch/logs
+    networks:
+      - esnet
 
   logstash:
     build:
@@ -24,17 +53,18 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:rw
     ports:
       - "5000:5000"
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
-      - elk
+      - esnet
     depends_on:
-      - elasticsearch
+      - es01
+      - es02
 
   kibana:
     build:
@@ -42,15 +72,15 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     volumes:
-      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:rw
     ports:
       - "5601:5601"
     networks:
-      - elk
+      - esnet
     depends_on:
-      - elasticsearch
+      - es01
+      - es02
 
 networks:
+  esnet:
 
-  elk:
-    driver: bridge
