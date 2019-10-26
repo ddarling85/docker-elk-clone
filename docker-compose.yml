@@ -18,6 +18,7 @@ services:
         soft: -1
         hard: -1
     volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - /srv/elasticsearch/es01_data:/usr/share/elasticsearch/data
       - /srv/elasticsearch/es01_logs:/usr/share/elasticsearch/logs
     ports:
