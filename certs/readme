@@ -1,0 +1,2 @@
+Certificate files go here.  Then use this folder as a volume mount point for
+elasticsearch nodes.
