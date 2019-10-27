@@ -1,22 +1,31 @@
-version: '2'
-
+version: '2.2'
 services:
-
-  elasticsearch:
+  eshub:
     build:
       context: elasticsearch/
       args:
         ELK_VERSION: $ELK_VERSION
+    container_name: eshub
+    environment:
+      - node.name=eshub
+      - node.master=false
+      - node.data=false
+      - node.ingest=false
+      - cluster.remote.connect=false
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:rw
+      - /srv/elasticsearch/eshub_data:/usr/share/elasticsearch/data
+      - /srv/elasticsearch/eshub_logs:/usr/share/elasticsearch/logs
     ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      ES_JAVA_OPTS: "-Xmx1024m -Xms1024m"
-      ELASTIC_PASSWORD: changeme
+      - 9200:9200
+      - 9300:9300
     networks:
-      - elk
+      - esnet
 
   logstash:
     build:
@@ -32,9 +41,9 @@ services:
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
-      - elk
+      - esnet
     depends_on:
-      - elasticsearch
+      - eshub
 
   kibana:
     build:
@@ -46,11 +55,10 @@ services:
     ports:
       - "5601:5601"
     networks:
-      - elk
+      - esnet
     depends_on:
-      - elasticsearch
+      - eshub
 
 networks:
+  esnet:
 
-  elk:
-    driver: bridge
