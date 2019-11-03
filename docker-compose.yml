@@ -18,9 +18,13 @@ services:
         soft: -1
         hard: -1
     volumes:
+<<<<<<< HEAD
       - ./elasticsearch/config/elasticsearch-es01.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ./elasticsearch/config/certs/elastic-cert-node1.p12:/usr/share/elasticsearch/config/certs/elastic-cert-node1.p12:ro
       - ./elasticsearch/config/certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/certs/elastic-stack-ca.p12:ro
+=======
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+>>>>>>> 7347df69d5d854a6e8b6fcd4ff40f3289c0c766c
       - /srv/elasticsearch/es01_data:/usr/share/elasticsearch/data
       - /srv/elasticsearch/es01_logs:/usr/share/elasticsearch/logs
     ports:
