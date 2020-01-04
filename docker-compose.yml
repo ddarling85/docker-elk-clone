@@ -13,6 +13,7 @@ services:
       - cluster.initial_master_nodes=es01,es02
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    restart: always 
     ulimits:
       memlock:
         soft: -1
@@ -40,6 +41,7 @@ services:
       - cluster.initial_master_nodes=es01,es02
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    restart: always
     ulimits:
       memlock:
         soft: -1
@@ -67,6 +69,7 @@ services:
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    restart: always
     networks:
       - esnet
     depends_on:
@@ -79,6 +82,7 @@ services:
       args:
         ELK_VERSION: $ELK_VERSION
     container_name: kibana
+    restart: always
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     ports:
