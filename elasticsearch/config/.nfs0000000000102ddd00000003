@@ -1,0 +1,23 @@
+---
+## Default Elasticsearch configuration from elasticsearch-docker.
+## from https://github.com/elastic/elasticsearch-docker/blob/master/.tedi/template/elasticsearch.yml
+#
+cluster.name: "elastic-cluster"
+network.host: 0.0.0.0
+
+## Use single node discovery in order to disable production mode and avoid bootstrap checks
+## see https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+#
+#discovery.type: single-node
+
+## X-Pack settings
+## see https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-xpack.html
+#
+xpack.license.self_generated.type: trial
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: none
+xpack.security.transport.ssl.keystore.type: PKCS12
+xpack.security.transport.ssl.keystore.path: certs/elastic-cert-node1.p12
+xpack.security.transport.ssl.truststore.path: certs/elastic-cert-node1.p12
+xpack.security.transport.ssl.truststore.type: PKCS12

@@ -1,0 +1,94 @@
+version: '2.2'
+services:
+  es01:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=elastic-cluster
+      - discovery.seed_hosts=es02
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch-es01.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/certs/elastic-cert-node1.p12:/usr/share/elasticsearch/config/certs/elastic-cert-node1.p12:ro
+      - ./elasticsearch/config/certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/certs/elastic-stack-ca.p12:ro
+      - /srv/elasticsearch/es01_data:/usr/share/elasticsearch/data
+      - /srv/elasticsearch/es01_logs:/usr/share/elasticsearch/logs
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  es02:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=elastic-cluster
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01,es02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/config/elasticsearch-es02.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./elasticsearch/config/certs/elastic-cert-node2.p12:/usr/share/elasticsearch/config/certs/elastic-cert-node2.p12:ro
+      - ./elasticsearch/config/certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/certs/elastic-stack-ca.p12:ro
+      - /srv/elasticsearch/es02_data:/usr/share/elasticsearch/data
+      - /srv/elasticsearch/es02_logs:/usr/share/elasticsearch/logs
+    networks:
+      - esnet
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - esnet
+    depends_on:
+      - es01
+      - es02
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    container_name: kibana
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - esnet
+    depends_on:
+      - es01
+      - es02
+
+networks:
+  esnet:
+
